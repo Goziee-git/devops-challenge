@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+    
+    environment {
+        SONARQUBE_SERVER = 'SonarQube' // Name of the SonarQube server in Jenkins
+    }
+    
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Replace with your repository URL
+                git 'https://github.com/Goziee-git/devops-challenge.git'
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // Run SonarQube analysis
+                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                        sh 'sonar-scanner \
+                            -Dsonar.projectKey=static-website \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN'
+                    }
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                script {
+                    // Wait for the quality gate result
+                    timeout(time: 5, unit: 'MINUTES') {
+                        def qualityGate = waitForQualityGate()
+                        if (qualityGate.status != 'OK') {
+                            error "Pipeline failed due to quality gate failure: ${qualityGate.status}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        failure {
+            echo 'Pipeline failed.'
+        }
+        success {
+            echo 'Pipeline succeeded. Quality gate passed.'
+        }
+    }
+}
