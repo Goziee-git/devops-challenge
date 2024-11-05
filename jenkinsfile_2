@@ -9,7 +9,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Replace with your repository URL
-                git 'https://github.com/Goziee-git/devops-challenge.git'
+                git 'https://www.github.com/Goziee-git/devops-challenge.git'
             }
         }
         
